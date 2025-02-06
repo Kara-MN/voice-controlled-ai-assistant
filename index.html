@@ -28,55 +28,50 @@
     <p id="output">Your voice command will appear here...</p>
 
     <script>
-        // Initialize SpeechRecognition (for browser voice-to-text)
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-
-        recognition.onresult = function(event) {
-            const command = event.results[0][0].transcript; // Get the recognized speech
-            document.getElementById("output").textContent = "You said: " + command;
-            sendToGemini(command); // Send the command to Gemini API for processing
-        };
-
-        // Start voice recognition when the button is clicked
-        function startListening() {
-            recognition.start();
+        // Use SpeechRecognition if supported by the browser
+        let recognition;
+        try {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.onresult = function(event) {
+                const command = event.results[0][0].transcript;
+                document.getElementById("output").textContent = "You said: " + command;
+                sendToGemini(command);
+            };
+            recognition.onstart = function() { console.log("Speech recognition started..."); };
+            recognition.onend = function() { console.log("Speech recognition ended."); };
+        } catch (error) {
+            console.error("SpeechRecognition is not supported", error);
+            document.getElementById("output").textContent = "Speech Recognition is not supported on this browser.";
         }
 
-        // Send the recognized voice command to Gemini API
+        function startListening() {
+            if (recognition) {
+                recognition.start();
+            }
+        }
+
         function sendToGemini(command) {
-            const apiKey = 'AIzaSyDLWnqD9fq6e7SLNJPJkLvqxJs-13kG8xw'; // Add your Gemini API Key here
+            const apiKey = 'AIzaSyDLWnqD9fq6e7SLNJPJkLvqxJs-13kG8xw'; 
             const apiURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
             fetch(`${apiURL}?key=${apiKey}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: command  // Pass the voice command to the API
-                        }]
-                    }]
+                    contents: [{ parts: [{ text: command }] }]
                 })
             })
-            .then(response => {
-                // Log the full response to check its structure
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log("API Response Data:", data);  // Log the response to the console
-                
                 if (data && data.result && data.result.text) {
-                    const aiResponse = data.result.text;
-                    document.getElementById("output").textContent = "AI Response: " + aiResponse;
+                    document.getElementById("output").textContent = "AI Response: " + data.result.text;
                 } else {
                     document.getElementById("output").textContent = "Sorry, I couldn't understand.";
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById("output").textContent = "Error processing request. Please try again.";
+                document.getElementById("output").textContent = "Error processing request.";
             });
         }
     </script>
