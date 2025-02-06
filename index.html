@@ -5,89 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice-Controlled AI Assistant</title>
     <style>
-        /* From Uiverse.io by SelfMadeSystem */
-        .container::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            background-image: radial-gradient(
-                circle at 50% 50%,
-                #0000 0,
-                #0000 2px,
-                hsl(0 0 4%) 2px
-            );
-            background-size: 8px 8px;
-            --f: blur(1em) brightness(6);
-            animation: hii 10s linear infinite;
-        }
+        /* Your previous styling and background effects go here... */
 
-        @keyframes hii {
-            0% {
-                backdrop-filter: var(--f) hue-rotate(0deg);
-            }
-            to {
-                backdrop-filter: var(--f) hue-rotate(360deg);
-            }
-        }
-
-        .container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            --c: #09f;
-            background-color: #000;
-            background-image: radial-gradient(4px 100px at 0px 235px, var(--c), #0000),
-                radial-gradient(4px 100px at 300px 235px, var(--c), #0000),
-                radial-gradient(1.5px 1.5px at 150px 117.5px, var(--c) 100%, #0000 150%),
-                radial-gradient(4px 100px at 0px 252px, var(--c), #0000),
-                radial-gradient(4px 100px at 300px 252px, var(--c), #0000),
-                radial-gradient(1.5px 1.5px at 150px 126px, var(--c) 100%, #0000 150%),
-                radial-gradient(4px 100px at 0px 150px, var(--c), #0000),
-                radial-gradient(4px 100px at 300px 150px, var(--c), #0000),
-                radial-gradient(1.5px 1.5px at 150px 75px, var(--c) 100%, #0000 150%),
-                radial-gradient(4px 100px at 0px 253px, var(--c), #0000),
-                radial-gradient(4px 100px at 300px 253px, var(--c), #0000),
-                radial-gradient(1.5px 1.5px at 150px 126.5px, var(--c) 100%, #0000 150%),
-                radial-gradient(4px 100px at 0px 204px, var(--c), #0000),
-                radial-gradient(4px 100px at 300px 204px, var(--c), #0000),
-                radial-gradient(1.5px 1.5px at 150px 102px, var(--c) 100%, #0000 150%),
-                radial-gradient(4px 100px at 0px 134px, var(--c), #0000),
-                radial-gradient(4px 100px at 300px 134px, var(--c), #0000),
-                radial-gradient(1.5px 1.5px at 150px 67px, var(--c) 100%, #0000 150%);
-            background-size:
-                300px 235px,
-                300px 235px,
-                300px 235px,
-                300px 252px,
-                300px 252px,
-                300px 252px,
-                300px 150px,
-                300px 150px,
-                300px 150px;
-            animation: hi 150s linear infinite;
-        }
-
-        @keyframes hi {
-            0% {
-                background-position:
-                    0px 220px,
-                    3px 220px,
-                    151.5px 337.5px,
-                    25px 24px,
-                    28px 24px;
-            }
-            to {
-                background-position:
-                    0px 6800px,
-                    3px 6800px,
-                    151.5px 6917.5px,
-                    25px 13632px,
-                    28px 13632px;
-            }
-        }
-
-        /* Page Layout and Styling */
         body {
             font-family: 'Arial', sans-serif;
             color: white;
@@ -147,40 +66,71 @@
     </div>
 
     <script>
+        // Initialize SpeechRecognition (for browser voice-to-text)
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true;  // Keep recognition running
+        recognition.interimResults = true;  // Get intermediate results
+        let wakeWordDetected = false;
 
+        // Start listening for wake word
         recognition.onresult = function(event) {
-            const command = event.results[0][0].transcript;
-            document.getElementById("output").textContent = "You said: " + command;
-            processCommand(command);
+            let transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+
+            // Output the result (for debugging)
+            console.log("Heard: " + transcript);
+
+            // Detect the wake word
+            if (transcript.includes("hey ai") && !wakeWordDetected) {
+                document.getElementById("output").textContent = "AI is now active, please give a command!";
+                wakeWordDetected = true;  // Prevent multiple detections of the wake word
+            } else if (wakeWordDetected) {
+                processCommand(transcript); // Process command once the assistant is active
+            }
         };
 
+        // Start voice recognition
         function startListening() {
+            wakeWordDetected = false;  // Reset wake word detection
             recognition.start();
         }
 
+        // Stop the speech recognition
+        function stopListening() {
+            recognition.stop();
+        }
+
+        // Process commands after the wake word is detected
         function processCommand(command) {
             const lowerCaseCommand = command.toLowerCase();
-            if (lowerCaseCommand.includes("open instagram")) {
-                openWebsite("https://www.instagram.com");
-            } else if (lowerCaseCommand.includes("open youtube")) {
+
+            if (lowerCaseCommand.includes("open youtube")) {
                 openWebsite("https://www.youtube.com");
+            } else if (lowerCaseCommand.includes("open instagram")) {
+                openWebsite("https://www.instagram.com");
             } else if (lowerCaseCommand.includes("search")) {
                 const query = command.replace("search", "").trim();
                 searchGoogle(query);
+            } else if (lowerCaseCommand.includes("stop listening")) {
+                stopListening();
+                document.getElementById("output").textContent = "AI is now inactive.";
             } else {
                 document.getElementById("output").textContent = "I didn't understand that command.";
             }
         }
 
+        // Open a website in a new tab
         function openWebsite(url) {
             window.open(url, "_blank");
         }
 
+        // Perform a Google search
         function searchGoogle(query) {
             const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
             window.open(googleSearchUrl, "_blank");
         }
+
+        // Keep AI always active in the background (listening for the wake word)
+        startListening();
     </script>
 </body>
 </html>
