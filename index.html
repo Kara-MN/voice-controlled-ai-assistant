@@ -60,10 +60,14 @@
                     }]
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                // Log the full response to check its structure
+                return response.json();
+            })
             .then(data => {
-                // Check if there's a response and display it
-                if (data.result && data.result.text) {
+                console.log("API Response Data:", data);  // Log the response to the console
+                
+                if (data && data.result && data.result.text) {
                     const aiResponse = data.result.text;
                     document.getElementById("output").textContent = "AI Response: " + aiResponse;
                 } else {
