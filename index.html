@@ -44,7 +44,10 @@
 
         // Send the recognized voice command to Gemini API
         function sendToGemini(command) {
-            fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDLWnqD9fq6e7SLNJPJkLvqxJs-13kG8xw', {
+            const apiKey = 'AIzaSyDLWnqD9fq6e7SLNJPJkLvqxJs-13kG8xw'; // Add your Gemini API Key here
+            const apiURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+            fetch(`${apiURL}?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -59,13 +62,17 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Display the AI response if available, else show a default message
-                const aiResponse = data.result && data.result.text ? data.result.text : "Sorry, I couldn't understand.";
-                document.getElementById("output").textContent = "AI Response: " + aiResponse;
+                // Check if there's a response and display it
+                if (data.result && data.result.text) {
+                    const aiResponse = data.result.text;
+                    document.getElementById("output").textContent = "AI Response: " + aiResponse;
+                } else {
+                    document.getElementById("output").textContent = "Sorry, I couldn't understand.";
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById("output").textContent = "Error processing request.";
+                document.getElementById("output").textContent = "Error processing request. Please try again.";
             });
         }
     </script>
