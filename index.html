@@ -44,20 +44,20 @@
 
         // Send the recognized voice command to Gemini API
         function sendToGemini(command) {
-            fetch('https://api.gemini.com/v1/query', {
+            fetch('https://api.gemini.com/v1/query', {  // Make sure this is the correct endpoint
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'AIzaSyCYQV0ungp65H7l2HrSSzb8M8Dc_rzVGOo', // Replace with your actual Gemini API key
+                    'Authorization': 'Bearer YOUR_GEMINI_API_KEY', // Replace with your correct Gemini API key
                 },
                 body: JSON.stringify({
-                    query: command,
-                    context: {} // You can add context if needed
+                    query: command,  // Send the user’s voice command
+                    context: {} // Optional, you can leave it empty or add context if needed
                 })
             })
             .then(response => response.json())
             .then(data => {
-                const aiResponse = data.result.text || "Sorry, I couldn't understand.";
+                const aiResponse = data.result.text || "Sorry, I couldn't understand.";  // Check if the response has `result.text`
                 document.getElementById("output").textContent = "AI Response: " + aiResponse;
             })
             .catch(error => {
