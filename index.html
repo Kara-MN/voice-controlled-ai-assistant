@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice-Controlled AI Assistant</title>
     <style>
-        /* Your previous styling and background effects go here... */
-
         body {
             font-family: 'Arial', sans-serif;
             color: white;
@@ -66,40 +64,32 @@
     </div>
 
     <script>
-        // Initialize SpeechRecognition (for browser voice-to-text)
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.continuous = true;  // Keep recognition running
-        recognition.interimResults = true;  // Get intermediate results
-        let wakeWordDetected = false;
+        recognition.continuous = false;  // Only listen once per click
+        recognition.interimResults = false;  // Only get final results (no partials)
 
-        // Start listening for wake word
+        // Listen for results from speech recognition
         recognition.onresult = function(event) {
             let transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
 
-            // Output the result (for debugging)
+            // Debugging output
             console.log("Heard: " + transcript);
 
-            // Detect the wake word
-            if (transcript.includes("hey ai") && !wakeWordDetected) {
-                document.getElementById("output").textContent = "AI is now active, please give a command!";
-                wakeWordDetected = true;  // Prevent multiple detections of the wake word
-            } else if (wakeWordDetected) {
-                processCommand(transcript); // Process command once the assistant is active
-            }
+            processCommand(transcript);
         };
 
-        // Start voice recognition
+        // Handle errors
+        recognition.onerror = function(event) {
+            console.error("Error occurred in speech recognition: ", event.error);
+        };
+
+        // Start listening for commands
         function startListening() {
-            wakeWordDetected = false;  // Reset wake word detection
             recognition.start();
+            document.getElementById("output").textContent = "AI is listening for a command...";
         }
 
-        // Stop the speech recognition
-        function stopListening() {
-            recognition.stop();
-        }
-
-        // Process commands after the wake word is detected
+        // Process commands after recognition
         function processCommand(command) {
             const lowerCaseCommand = command.toLowerCase();
 
@@ -112,7 +102,6 @@
                 searchGoogle(query);
             } else if (lowerCaseCommand.includes("stop listening")) {
                 stopListening();
-                document.getElementById("output").textContent = "AI is now inactive.";
             } else {
                 document.getElementById("output").textContent = "I didn't understand that command.";
             }
@@ -129,8 +118,11 @@
             window.open(googleSearchUrl, "_blank");
         }
 
-        // Keep AI always active in the background (listening for the wake word)
-        startListening();
+        // Stop listening
+        function stopListening() {
+            recognition.stop();
+            document.getElementById("output").textContent = "AI is now inactive.";
+        }
     </script>
 </body>
 </html>
